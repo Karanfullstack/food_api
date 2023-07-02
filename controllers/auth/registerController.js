@@ -1,11 +1,11 @@
 import Joi from "joi";
 import CustomErrorHandler from "../../services/CustomErrorHandler";
 import {User} from "../../models";
-
+import bcrypt from "bcrypt";
 const registerController = {
   async register(req, res, next) {
     // Validation Schema
-    const registerSchema = Joi.object({ 
+    const registerSchema = Joi.object({
       name: Joi.string().min(3).max(30).required(),
       email: Joi.string().email().required(),
       password: Joi.string()
@@ -31,7 +31,11 @@ const registerController = {
       }
     } catch (err) {
       return next(err);
-    } 
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    // prepare the model
 
     res.send({
       message: "OK",
