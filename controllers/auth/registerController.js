@@ -2,8 +2,11 @@ import Joi from "joi";
 import CustomErrorHandler from "../../services/CustomErrorHandler";
 import {User} from "../../models";
 import bcrypt from "bcrypt";
+import JwtService from "../../services/JwtSertice";
+
 const registerController = {
   async register(req, res, next) {
+    // register controller function..
     // Validation Schema
     const registerSchema = Joi.object({
       name: Joi.string().min(3).max(30).required(),
@@ -21,25 +24,39 @@ const registerController = {
     }
 
     // Check if user is exists
-
     try {
       const exist = await User.exists({email: req.body.email});
       if (exist) {
-        return next(
-          CustomErrorHandler.alreadyExist("This email is already taken.")
-        );
+        return next(CustomErrorHandler.alreadyExist());
       }
     } catch (err) {
       return next(err);
     }
 
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    // Hash password...
+    const {name, email, password} = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // prepare the model
+    // prepare the model..
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    // token variable
+    let access_token;
+    try {
+      const result = await user.save();
+      // JsonToken
+      access_token = JwtService.sign({_id: result._id, role: result.role});
+    } catch (error) {
+      return next(error);
+    }
 
     res.send({
-      message: "OK",
-      data: req.body,
+      message: "Ok",
+      access_token: access_token,
     });
   },
 };
