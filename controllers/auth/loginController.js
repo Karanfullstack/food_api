@@ -25,7 +25,7 @@ const loginController = {
       }
       // compare the password
       const match = await bcrpt.compare(req.body.password, user.password);
-
+      
       if (!match) {
         return next(wrongCredentials());
       }

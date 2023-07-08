@@ -8,7 +8,7 @@ const errorHandler = (err, req, res, next) => {
     message: "Internal sever error",
     ...(DEBUG_MODE === "true" && {orignalError: err.message}),
   };
-
+  
   if (err instanceof ValidationError) {
     statusCode = 422;
     data = {
