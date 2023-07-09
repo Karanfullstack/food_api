@@ -14,6 +14,7 @@ const userController = {
     } catch (error) {
       return next(error);
     }
+    
   },
 };
 
