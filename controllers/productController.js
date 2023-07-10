@@ -39,7 +39,9 @@ const productController = {
       if (error) {
         // delete the upload file // appRoot is a global variable
         fs.unlink(`${appRoot}/${filePath}`, (err) => {
-          return next(CustomErrorHandler.serverError(err.message));
+          if (err) {
+            return next(CustomErrorHandler.serverError(err.message));
+          }
         });
         return next(error);
       }
