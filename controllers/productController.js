@@ -1,4 +1,3 @@
-import Joi from "joi";
 import {Product} from "../models";
 import multer from "multer";
 import path from "path";
@@ -55,7 +54,7 @@ const productController = {
       } catch (err) {
         return next(err);
       }
-      res.status(201).json({sucess:true,document});
+      res.status(201).json({sucess: true, document});
     });
   },
 
@@ -99,20 +98,41 @@ const productController = {
           },
           {new: true}
         );
-        console.log(document);
       } catch (error) {
         return next(err);
       }
-      res.status(201).json({sucess:true,document});
+      res.status(201).json({sucess: true, document});
     });
   },
 
-// @Delete Route
+  // @Delete Route
+  async delete(req, res, next) {
+    const document = await Product.findOneAndDelete({_id: req.params.id});
+    if (!document) {
+      return next(new Error("Nothing to delete"));
+    }
+    // image delete
+    const imagePath = document.image;
+    fs.unlink(`${appRoot}/${imagePath}`, (err) => {
+      if (err) {
+        return next(CustomErrorHandler.serverError());
+      }
+    });
+    res.json({sucess: true, document});
+  },
 
- async delete(req, res, next){
-  
- }
-
+  // @Get all products
+  async get(req, res, next) {
+    let documents;
+    try {
+      documents = await Product.find()
+        .select("-updatedAt -__v")
+        .sort({_id: -1});
+    } catch (err) {
+      return next(CustomErrorHandler.serverError(err.message));
+    }
+    return res.json({sucess: true, length: documents.length, documents});
+  },
 };
 
 export default productController;
