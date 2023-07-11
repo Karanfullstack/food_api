@@ -107,12 +107,14 @@ const productController = {
 
   // @Delete Route
   async delete(req, res, next) {
-    const document = await Product.findOneAndDelete({_id: req.params.id});
+    const document = await Product.findOneAndDelete({
+      _id: req.params.id,
+    }).select("-updatedAt -__v");
     if (!document) {
       return next(new Error("Nothing to delete"));
     }
     // image delete
-    const imagePath = document.image;
+    const imagePath = document._doc.image;
     fs.unlink(`${appRoot}/${imagePath}`, (err) => {
       if (err) {
         return next(CustomErrorHandler.serverError());
@@ -132,6 +134,19 @@ const productController = {
       return next(CustomErrorHandler.serverError(err.message));
     }
     return res.json({sucess: true, length: documents.length, documents});
+  },
+
+  // @Get a single product
+  async show(req, res, next) {
+    let document;
+    try {
+      document = await Product.findOne({_id: req.params.id}).select(
+        "-updatedAt -__v"
+      );
+    } catch (error) {
+      return next(CustomErrorHandler.serverError());
+    }
+    return res.json(document);
   },
 };
 
